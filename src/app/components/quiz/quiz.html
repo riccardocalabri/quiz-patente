@@ -1,1 +1,31 @@
-<p>quiz works!</p>
+<div class="container py-5">
+    <div class="text-center">
+        <h1>Quiz n: {{ quiz()?.[0]?.[0] }}</h1>
+    </div>
+
+    @for (item of quiz() ?? []; track $index) {
+        <div>
+            <div class="text-center">
+                @if (item[1].fig) {
+                    <img [src]="`/${item[1].fig}.jpg`" style="height: 300px; width: auto"><br>
+                }
+            </div>
+
+            @if (counter() < item[1].domande.length;) {
+                <h3>Domanda {{ counter() + 1 }}/{{ item[1].domande.length }}</h3>
+                <p>{{ item[1].domande[counter()][0] }}</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-success" (click)="answer(true)">Vero</button>
+                    <button class="btn btn-danger" (click)="answer(false)">Falso</button>
+                </div>
+            } @else {
+                <h2>Quiz Completed!</h2>
+                <p>Your Score: {{ score() }} / {{ item[1].domande.length }}</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-success" (click)="resetQuiz()">Retake Quiz</button>
+                    <a [routerLink]="['/']" class="btn btn-primary">Return to Home</a>
+                </div>
+            }
+        </div>
+    }
+</div>
