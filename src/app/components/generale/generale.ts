@@ -1,7 +1,14 @@
-import { Component, signal, WritableSignal, computed, OnInit } from '@angular/core';
+import { Component, signal, WritableSignal, computed, OnInit, inject } from '@angular/core';
 import { IData } from '../../interfaces/data';
 import data from '../../json/data.json';
 import { RouterLink } from '@angular/router';
+import { Quiz } from '../../services/quiz';
+
+export interface QuizQuestion {
+  text: string;
+  answer: boolean;
+  fig?: string;
+}
 
 @Component({
   selector: 'app-generale',
@@ -11,54 +18,71 @@ import { RouterLink } from '@angular/router';
   styleUrl: './generale.css',
 })
 export class Generale implements OnInit {
-  
-  // Signal per le 30 domande selezionate per il quiz corrente
-  // Ogni domanda è una tupla: [testo della domanda, risposta corretta]
-  questions: WritableSignal<[string, boolean][]> = signal([]);
-  
+
+  // Tutte le domande estratte dal json
+  allQuestions: WritableSignal<IData> = signal<IData>(data as IData);
+
+  // Domande del quiz
+  questions: WritableSignal<QuizQuestion[]> = signal([]);
+
   counter = signal(0);
   score = signal(0);
 
-  // Selector derivato per la domanda corrente
-  currentQuestion = computed(() => this.questions()[this.counter()]);
+  quizService: Quiz = inject(Quiz);
+
+  currentQuestion = computed(() => {
+    return this.questions()[this.counter()] ?? null;
+  });
 
   ngOnInit(): void {
     this.generateQuiz();
   }
 
   generateQuiz() {
-    const typedData = data as unknown as IData;
-    
-    // 1. Estraiamo tutte le domande da tutte le categorie (N11001, N11002, ecc.)
-    // Usiamo Object.values per scorrere i valori del JSON
-    const allQuestions: [string, boolean][] = Object.values(typedData)
-      .filter(item => item && item.domande) // Sicurezza: controlla che esista la prop domande
-      .flatMap(item => item.domande);
+    const dataObj = this.allQuestions();
 
-    // 2. Mischiamo l'array (Fisher-Yates shuffle semplificato)
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    // 1️⃣ Oggetto -> array
+    const blocks = Object.values(dataObj);
 
-    // 3. Prendiamo le prime 30 e aggiorniamo il segnale
-    this.questions.set(shuffled.slice(0, 30));
-    
-    // Reset dello stato
+    // 2️⃣ Flatten con fig
+    const allDomande: QuizQuestion[] = blocks.flatMap(block =>
+      block.domande.map((element: any) => ({
+        text: element[0],
+        answer: element[1],
+        fig: block.fig
+      }))
+    );
+
+    // 3️⃣ Shuffle
+    const shuffled = [...allDomande].sort(() => Math.random() - 0.5);
+
+    // 4️⃣ Slice 30
+    const selected = shuffled.slice(0, 30);
+
+    this.questions.set(selected);
+    console.log('Domande generate:', this.questions());
+
     this.counter.set(0);
     this.score.set(0);
   }
 
-  answer(userChoice: boolean) {
+  async answer(userChoice: boolean) {
     const question = this.currentQuestion();
-    
     if (!question) return;
 
-    const correctAnswer = question[1];
-
-    if (userChoice === correctAnswer) {
-      this.score.set(this.score() + 1)
+    if (userChoice === question.answer) {
+      this.score.set(this.score() + 1);
     }
 
-    this.counter.set(this.counter() + 1)
+    this.counter.set(this.counter() + 1);
 
+    if (this.counter() >= this.questions().length) {
+      try {
+        await this.quizService.postQuizResult(this.score(), this.questions().length);
+      } catch (err) {
+        console.error("Errore salvataggio quiz:", err);
+      }
+    }
   }
 
   resetQuiz() {

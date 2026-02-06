@@ -3,30 +3,62 @@
         <h1>Quiz Generale</h1>
     </div>
 
-    @if (counter() < questions().length) {
-        <div class="card p-4 shadow-sm">
-            <h3>Domanda {{ counter() + 1 }} / {{ questions().length }}</h3>
-            <p class="fs-4 my-4">{{ currentQuestion()[0] }}</p>
-            
-            <div class="d-flex justify-content-center gap-3">
-                <button class="btn btn-lg btn-success px-5" (click)="answer(true)">Vero</button>
-                <button class="btn btn-lg btn-danger px-5" (click)="answer(false)">Falso</button>
+    @if (counter() < questions().length) { 
+        <div class="quiz-wrapper">
+            <div class="card quiz-card shadow-lg">
+
+                <div class="quiz-header">
+                    <h5>Domanda {{ counter() + 1 }} / {{ questions().length }}</h5>
+
+                    <div class="progress mt-2">
+                        <div class="progress-bar" [style.width.%]="(counter() / questions().length) * 100"></div>
+                    </div>
+                </div>
+
+                @if (currentQuestion()?.fig) {
+                    <div class="quiz-image">
+                        <img [src]="`/${currentQuestion()?.fig}.jpg`" alt="figura" />
+                    </div>
+                }
+
+                <div class="quiz-body">
+                    <p>{{ currentQuestion()!.text }}</p>
+                </div>
+
+                <div class="quiz-actions">
+                    <button class="btn btn-lg btn-success" (click)="answer(true)">
+                        Vero
+                    </button>
+
+                    <button class="btn btn-lg btn-danger" (click)="answer(false)">
+                        Falso
+                    </button>
+                </div>
             </div>
         </div>
     } @else {
         <div class="text-center border p-5 rounded bg-light">
             <h2 class="text-success">Quiz Completato!</h2>
-            <p class="fs-3">Il tuo punteggio: <strong>{{ score() }}</strong> / {{ questions().length }}</p>
-            
-            @if(score() <= 27) {
-                <p style="color: red;">Bocciato</p>
+
+            <p class="fs-3">
+                Il tuo punteggio:
+                <strong>{{ score() }}</strong> / {{ questions().length }}
+            </p>
+
+            @if (score() <= 27) { 
+                <p class="fs-4 text-danger">Bocciato</p>
             } @else {
-                <p style="color: green;">Promosso</p>
+                <p class="fs-4 text-success">Promosso</p>
             }
 
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <button class="btn btn-outline-success" (click)="resetQuiz()">Riprova</button>
-                <a [routerLink]="['/']" class="btn btn-primary">Torna alla Home</a>
+                <button class="btn btn-outline-success" (click)="resetQuiz()">
+                    Riprova
+                </button>
+
+                <a [routerLink]="['/']" class="btn btn-primary">
+                    Torna alla Home
+                </a>
             </div>
         </div>
     }

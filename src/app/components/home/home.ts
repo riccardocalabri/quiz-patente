@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
-import { IData } from '../../interfaces/data';
-import data from '../../json/data.json';
 import { RouterLink } from '@angular/router';
+import { Quiz } from '../../services/quiz';
+import { IStats } from '../../interfaces/stats';
 
 @Component({
   selector: 'app-home',
@@ -11,13 +11,15 @@ import { RouterLink } from '@angular/router';
 })
 export class Home {
 
-  // array di tuple [chiave, valore]
-  quiz: WritableSignal<[keyof IData, IData[keyof IData]][] | null> = signal<[keyof IData, IData[keyof IData]][] | null>(null);
+  quizService: Quiz = inject(Quiz);
+  allQuiz: WritableSignal<IStats[]> = signal<IStats[]>([]);
 
   ngOnInit(): void {
-    // Object.entries trasforma l'oggetto JSON in array iterabile
-    this.quiz.set(Object.entries(data as IData) as [keyof IData, IData[keyof IData]][]);
-    console.log(this.quiz());
+    this.quizService.getQuizByUserId(1)
+      .subscribe((response: IStats[]) => {      
+        this.allQuiz.set(response);
+        console.log(this.allQuiz());
+      });
   }
 
 }
