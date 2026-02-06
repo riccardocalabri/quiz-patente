@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { IData } from '../../interfaces/data';
 import data from '../../json/data.json';
