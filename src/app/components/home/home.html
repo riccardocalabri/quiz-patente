@@ -1,15 +1,52 @@
-<div class="container py-5">
-    <div class="text-center">
+<div class="container py-5" style="min-height: 80svh;">
+    <div class="text-center my-5">
         <h1>Le tue statistiche</h1>
     </div>
 
-    <div class="row">
-        @for(quiz of allQuiz(); track $index) {
-            <div class="col-md-4">
-                <div class="card">
-                    <p>Punteggio ottenuto: {{ quiz.punteggio_ottenuto }}/{{ quiz.punteggio_totale }}</p>
-                </div>
+    @if (allQuiz().length === 0) {
+        <p class="text-center mt-4">Non hai ancora completato nessun quiz.</p>
+    } @else {
+        <div style="height: 60svh; display: flex; justify-content: center; align-items: center;" class="my-5">
+            <canvas baseChart [data]="pieChartData" type="pie">
+            </canvas>
+
+            <canvas baseChart [data]="lineChartData" type="line" [options]="lineChartOptions">
+            </canvas>
+        </div>
+
+        <div class="text-center my-5">
+            <h1>Piu nello specifico</h1>
+        </div>
+
+        <div class="row text-center my-5">
+            <div class="col-md-3 col-6">
+                <h3>{{ allQuiz().length }}</h3>
+                <p>Tot quiz completati</p>
             </div>
-        }
-    </div>
+            <div class="col-md-3 col-6">
+                <h3>{{ superati }}</h3>
+                <p>Tot superati</p>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3>{{ bocciati }}</h3>
+                <p>Tot Bocciati</p>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3>{{ ((superati/allQuiz().length)*100).toFixed(2) }} %</h3>
+                <p>Percentuale di successo</p>
+            </div>
+        </div>
+
+        <div class="fs-5 fst-italic text-center my-5">
+            @if (superati == 0) {
+                <p>Non mollare! Ogni errore è un insegnamento.</p>
+            } @else if (superati <= bocciati) {
+                <p>Non preoccuparti se sbagli, l’importante è imparare e riprovare.</p>
+            } @else if (superati == allQuiz().length) {
+                <p>Sei un vero esperto! Continua così!</p>
+            } @else {
+                <p>Stai facendo progressi! Continua a studiare e vedrai i risultati.</p>
+            }
+        </div>
+    }
 </div>

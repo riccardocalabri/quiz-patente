@@ -1,28 +1,43 @@
-<nav class="navbar navbar-dark bg-dark container-fluid px-4" style="height: 10svh;">
-    <!-- Logo -->
-    <a class="d-flex align-items-center gap-2 text-decoration-none" routerLink="/">
-        <span class="fs-4 fw-bold text-white">🚗 Quiz Patente</span>
-    </a>
+<nav class="navbar navbar-dark bg-dark px-4" style="height: 10svh;">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
 
-    <!-- Links -->
-    <div class="d-flex align-items-center gap-3">
-        <a class="btn btn-outline-light" routerLink="/generale">
-            Quiz Generale
+        <!-- Logo -->
+        <a class="d-flex align-items-center gap-2 text-decoration-none" routerLink="/">
+            <span class="fs-4 fw-bold text-white">🚗 Quiz Patente</span>
         </a>
 
-        <a class="btn btn-outline-light" routerLink="/categorie">
-            Per Categoria
-        </a>
-    </div>
+        <!-- Link centrale -->
+        <div class="d-flex align-items-center gap-3">
+            <a class="btn btn-outline-light" routerLink="/generale">
+                Quiz Generale
+            </a>
+        </div>
 
-    <!-- Auth -->
-    <div class="d-flex align-items-center gap-2">
-        <a class="btn btn-outline-info" routerLink="/login">
-            Login
-        </a>
+        <!-- Sezione utente -->
+        <div class="d-flex align-items-center gap-3">
 
-        <a class="btn btn-info text-dark" routerLink="/signup">
-            Signup
-        </a>
+            @if (authService.isLoggedIn()) {
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Ciao, {{ authService.currentUser()?.name }}!
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <button class="dropdown-item" (click)="authService.logout()">
+                                Logout
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            } @else {
+                <!-- Se non loggato -->
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline-light" routerLink="/login">Login</a>
+                    <a class="btn btn-outline-light" routerLink="/signup">Signup</a>
+                </div>
+            }
+        </div>
+
     </div>
 </nav>

@@ -1,16 +1,12 @@
 import { Routes } from '@angular/router';
-import { Quiz } from './components/quiz/quiz';
 import { Home } from './components/home/home';
 import { Generale } from './components/generale/generale';
-import { Categorie } from './components/categorie/categorie';
 import { Login } from './components/login/login';
 import { Signup } from './components/signup/signup';
 
 export const routes: Routes = [
     {path: '', component: Home},
-    {path: 'quiz/:id', component: Quiz},
     {path: 'generale', component: Generale},
-    {path: 'categorie', component: Categorie},
     {path: 'login', component: Login},
     {path: 'signup', component: Signup}
 ];

@@ -1,5 +1,6 @@
+import { Injectable, inject, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { IUser } from '../interfaces/iuser';
 
 @Injectable({
@@ -7,32 +8,77 @@ import { IUser } from '../interfaces/iuser';
 })
 export class Auth {
 
-  http: HttpClient = inject(HttpClient);
-  url = 'http://localhost:3000';
+  private http: HttpClient = inject(HttpClient);
+  private url = 'http://localhost:3000';
 
-  currentUserId: WritableSignal<number | null> = signal<number | null>(1);
-  isLoggedIn: WritableSignal<boolean> = signal<boolean>(true);
+  // Signals per lo stato dell'autenticazione
+  currentUserId: WritableSignal<number | null> = signal<number | null>(null);
+  currentUser: WritableSignal<IUser | null> = signal<IUser | null>(null);
+  isLoggedIn: WritableSignal<boolean> = signal<boolean>(false);
 
-  signup(username: string, password: string) {
-    return this.http.post(`${this.url}/signup`, { username, password })
-      .subscribe((response: any) => {        
-        this.currentUserId.set(response.id);
-      });
+  // --------------------------
+  // SIGNUP
+  // --------------------------
+  async signup(name: string, email: string, password: string): Promise<IUser | null> {
+    try {
+      const user = await firstValueFrom(
+        this.http.post<IUser>(`${this.url}/register`, { name, email, password })
+      );
+
+      this.currentUserId.set(user.id);
+      this.currentUser.set(user);
+      this.isLoggedIn.set(true);
+
+      return user;
+
+    } catch (error) {
+      console.error('Signup failed:', error);
+      return null;
+    }
   }
 
-  login(username: string, password: string) {
-    return this.http.post(`${this.url}/login`, { username, password })
-      .subscribe((response: any) => {        
-        this.currentUserId.set(response.id);
-      });
+  // --------------------------
+  // LOGIN
+  // --------------------------
+  async login(email: string, password: string): Promise<IUser | null> {
+  try {
+    const user = await firstValueFrom(
+      this.http.post<IUser>(`${this.url}/login`, { email, password })
+    );
+
+    this.currentUserId.set(user.id);
+    this.currentUser.set(user);
+    this.isLoggedIn.set(true);
+
+    return user;
+
+  } catch (error) {
+    console.error('Login failed:', error);
+    return null;
+  }
+}
+
+  // --------------------------
+  // GET USER BY ID
+  // --------------------------
+  async getUserById(id: number): Promise<IUser> {
+    return await firstValueFrom(this.http.get<IUser>(`${this.url}/users/${id}`));
   }
 
-  getUserById(id: number) {
-    return this.http.get<IUser>(`${this.url}/users/${this.currentUserId()}`);
+  // --------------------------
+  // GET ALL USERS
+  // --------------------------
+  async getAllUsers(): Promise<IUser[]> {
+    return await firstValueFrom(this.http.get<IUser[]>(`${this.url}/users`));
   }
 
-  getAllUsers() {
-    return this.http.get<IUser[]>(`${this.url}/users`);
+  // --------------------------
+  // LOGOUT
+  // --------------------------
+  logout() {
+    this.currentUserId.set(null);
+    this.currentUser.set(null);
+    this.isLoggedIn.set(false);
   }
-  
+
 }
