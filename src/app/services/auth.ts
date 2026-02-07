@@ -10,11 +10,29 @@ export class Auth {
 
   private http: HttpClient = inject(HttpClient);
   private url = 'http://localhost:3000';
+  private readonly STORAGE_KEY = 'quiz_current_user';
 
   // Signals per lo stato dell'autenticazione
   currentUserId: WritableSignal<number | null> = signal<number | null>(null);
   currentUser: WritableSignal<IUser | null> = signal<IUser | null>(null);
   isLoggedIn: WritableSignal<boolean> = signal<boolean>(false);
+
+  constructor() {
+    // All'avvio del servizio, controlla se esistono dati utente salvati
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (raw) {
+        const parsed: IUser = JSON.parse(raw);
+        if (parsed && parsed.id) {
+          this.currentUserId.set(parsed.id);
+          this.currentUser.set(parsed);
+          this.isLoggedIn.set(true);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore user from storage', e);
+    }
+  }
 
   // --------------------------
   // SIGNUP
@@ -28,6 +46,7 @@ export class Auth {
       this.currentUserId.set(user.id);
       this.currentUser.set(user);
       this.isLoggedIn.set(true);
+      try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user)); } catch { }
 
       return user;
 
@@ -49,6 +68,7 @@ export class Auth {
     this.currentUserId.set(user.id);
     this.currentUser.set(user);
     this.isLoggedIn.set(true);
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user)); } catch { }
 
     return user;
 
@@ -79,6 +99,7 @@ export class Auth {
     this.currentUserId.set(null);
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
+    try { localStorage.removeItem(this.STORAGE_KEY); } catch { }
   }
 
 }
