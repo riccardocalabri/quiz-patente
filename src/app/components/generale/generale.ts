@@ -60,6 +60,7 @@ export class Generale {
     const answers = [...this.userAnswers()];
     answers[this.counter()] = userChoice;
     this.userAnswers.set(answers);
+    this.nextQuestion();
   }
 
   prevQuestion() {
@@ -71,6 +72,8 @@ export class Generale {
   }
 
   submitQuiz() {
+
+    console.log("Risposte utente:", this.userAnswers());
     // Calcola lo score corretto
     const questions = this.questions();
     const userAnswers = this.userAnswers();

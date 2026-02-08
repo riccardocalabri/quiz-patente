@@ -72,6 +72,29 @@
         <button class="btn btn-outline-success" (click)="resetQuiz()">Riprova</button>
         <a [routerLink]="['/']" class="btn btn-primary">Torna alla Home</a>
       </div>
+
+      <div class="text-center mt-5">
+        <h1>Revisione</h1>
+      </div>
+
+      @for (domanda of questions(); track $index) {
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">{{ domanda.text }}</h5>
+            @if (domanda.fig) {
+              <div class="quiz-image">
+                <img [src]="`/${domanda.fig}.jpg`" alt="figura" class="img-fluid mb-3"/>
+            </div>
+            }
+            <p class="card-text">Risposta Corretta: <strong>{{ domanda.answer ? 'Vero' : 'Falso' }}</strong></p>
+            <p class="card-text">La tua Risposta: 
+              <strong [class]="{'text-success': userAnswers()[questions().indexOf(domanda)] === domanda.answer, 'text-danger': userAnswers()[questions().indexOf(domanda)] !== domanda.answer}">
+                {{ userAnswers()[questions().indexOf(domanda)] === true ? 'Vero' : userAnswers()[questions().indexOf(domanda)] === false ? 'Falso' : 'Non risposta' }}
+              </strong>
+            </p>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>
