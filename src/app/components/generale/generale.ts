@@ -1,4 +1,4 @@
-import { Component, signal, WritableSignal, computed, OnInit, inject } from '@angular/core';
+import { Component, signal, WritableSignal, computed, inject } from '@angular/core';
 import { IData } from '../../interfaces/data';
 import data from '../../json/data.json';
 import { RouterLink } from '@angular/router';
@@ -15,74 +15,77 @@ export interface QuizQuestion {
   standalone: true,
   imports: [RouterLink],
   templateUrl: './generale.html',
-  styleUrl: './generale.css',
+  styleUrls: ['./generale.css'],
 })
-export class Generale implements OnInit {
+export class Generale {
 
-  // Tutte le domande estratte dal json
   allQuestions: WritableSignal<IData> = signal<IData>(data as IData);
-
-  // Domande del quiz
-  questions: WritableSignal<QuizQuestion[]> = signal([]);
-
+  questions: WritableSignal<QuizQuestion[]> = signal<QuizQuestion[]>([]);
+  userAnswers: WritableSignal<(boolean | null)[]> = signal<(boolean | null)[]>([]);
   counter = signal(0);
   score = signal(0);
+  showResults = signal(false);
 
   quizService: Quiz = inject(Quiz);
 
-  currentQuestion = computed(() => {
-    return this.questions()[this.counter()] ?? null;
-  });
+  currentQuestion = computed(() => this.questions()[this.counter()] ?? null);
+  currentAnswer = computed(() => this.userAnswers()[this.counter()] ?? null);
 
   ngOnInit(): void {
     this.generateQuiz();
   }
 
   generateQuiz() {
-    const dataObj = this.allQuestions();
-
-    // 1️⃣ Oggetto -> array
-    const blocks = Object.values(dataObj);
-
-    // 2️⃣ Flatten con fig
+    const blocks = Object.values(this.allQuestions());
     const allDomande: QuizQuestion[] = blocks.flatMap(block =>
-      block.domande.map((element: any) => ({
-        text: element[0],
-        answer: element[1],
+      block.domande.map((el: any) => ({
+        text: el[0],
+        answer: el[1],
         fig: block.fig
       }))
     );
 
-    // 3️⃣ Shuffle
     const shuffled = [...allDomande].sort(() => Math.random() - 0.5);
-
-    // 4️⃣ Slice 30
     const selected = shuffled.slice(0, 30);
 
     this.questions.set(selected);
-    console.log('Domande generate:', this.questions());
-
+    this.userAnswers.set(new Array(selected.length).fill(null));
     this.counter.set(0);
     this.score.set(0);
+    this.showResults.set(false);
   }
 
-  async answer(userChoice: boolean) {
-    const question = this.currentQuestion();
-    if (!question) return;
+  answer(userChoice: boolean) {
+    // Aggiorna la risposta corrente senza bloccare la selezione
+    const answers = [...this.userAnswers()];
+    answers[this.counter()] = userChoice;
+    this.userAnswers.set(answers);
+  }
 
-    if (userChoice === question.answer) {
-      this.score.set(this.score() + 1);
-    }
+  prevQuestion() {
+    if (this.counter() > 0) this.counter.set(this.counter() - 1);
+  }
 
-    this.counter.set(this.counter() + 1);
+  nextQuestion() {
+    if (this.counter() < this.questions().length - 1) this.counter.set(this.counter() + 1);
+  }
 
-    if (this.counter() >= this.questions().length) {
-      try {
-        await this.quizService.postQuizResult(this.score(), this.questions().length);
-      } catch (err) {
-        console.error("Errore salvataggio quiz:", err);
-      }
-    }
+  submitQuiz() {
+    // Calcola lo score corretto
+    const questions = this.questions();
+    const userAnswers = this.userAnswers();
+    let calculatedScore = 0;
+
+    userAnswers.forEach((answer, index) => {
+      if (answer === questions[index].answer) calculatedScore++;
+    });
+
+    this.score.set(calculatedScore);
+    this.showResults.set(true);
+
+    // Invia al server
+    this.quizService.postQuizResult(calculatedScore, questions.length)
+      .catch(err => console.error("Errore salvataggio quiz:", err));
   }
 
   resetQuiz() {
