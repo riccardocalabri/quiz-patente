@@ -17,6 +17,14 @@ export class Auth {
   currentUser: WritableSignal<IUser | null> = signal<IUser | null>(null);
   isLoggedIn: WritableSignal<boolean> = signal<boolean>(false);
 
+  getUserId(): number {
+    const id = this.currentUserId();
+    if (id === null) {
+      return -1; // Indica che non c'è un utente loggato
+    }
+    return id;
+  }
+
   constructor() {
     // All'avvio del servizio, controlla se esistono dati utente salvati
     try {

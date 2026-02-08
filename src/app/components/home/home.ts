@@ -4,6 +4,7 @@ import { Quiz } from '../../services/quiz';
 import { IStats } from '../../interfaces/stats';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-home',
@@ -14,6 +15,7 @@ import { BaseChartDirective } from 'ng2-charts';
 export class Home {
 
   quizService: Quiz = inject(Quiz);
+  authService: Auth = inject(Auth);
   allQuiz: WritableSignal<IStats[]> = signal<IStats[]>([]);
 
   superati = 0;
@@ -74,7 +76,8 @@ export class Home {
   };
 
   ngOnInit(): void {
-    this.quizService.getQuizByUserId(1)
+    let user_id = this.authService.getUserId();
+    this.quizService.getQuizByUserId(user_id)
       .subscribe((response: IStats[]) => {      
         this.allQuiz.set(response);
         this.loadPieChartData();

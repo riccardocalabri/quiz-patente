@@ -3,8 +3,8 @@
         <h1>Le tue statistiche</h1>
     </div>
 
-    @if (allQuiz().length === 0) {
-        <p class="text-center mt-4">Non hai ancora completato nessun quiz.</p>
+    @if (allQuiz().length <= 1) {
+        <p class="text-center mt-4">Non hai ancora completato abbastanza quiz per visualizzare le statistiche.</p>
     } @else {
         <div style="height: 60svh; display: flex; justify-content: center; align-items: center;" class="my-5">
             <canvas baseChart [data]="pieChartData" type="pie">
