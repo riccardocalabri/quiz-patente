@@ -28,6 +28,11 @@
                                 Logout
                             </button>
                         </li>
+                        <li>
+                            <button class="dropdown-item" (click)="authService.deleteUser()">
+                                Elimina Account
+                            </button>
+                        </li>
                     </ul>
                 </div>
             } @else {

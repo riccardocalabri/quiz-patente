@@ -63,6 +63,13 @@ app.get("/user/:id", async (req, res) => {
 })
 
 
+app.delete("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  await db.query("DELETE FROM users WHERE id = ?", [id]);
+  res.json({ message: "User deleted successfully" });
+});
+
+
 app.get("/statistics/:id", async (req, res) => {
   const { id } = req.params;
   const [rows] = await db.query("SELECT * FROM quiz_taken WHERE fkuser = ?", [id]);

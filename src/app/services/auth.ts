@@ -100,6 +100,17 @@ export class Auth {
     return await firstValueFrom(this.http.get<IUser[]>(`${this.url}/users`));
   }
 
+  async deleteUser() { 
+    return await this.http.delete(`${this.url}/user/${this.getUserId()}`)
+      .subscribe({
+        next: () => {
+          this.logout();
+        },
+        error: (err) => {
+          console.error("Errore eliminazione utente:", err);
+        }
+      })
+  }
   // --------------------------
   // LOGOUT
   // --------------------------
